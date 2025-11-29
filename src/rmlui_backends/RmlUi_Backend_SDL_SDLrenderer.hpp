@@ -268,31 +268,61 @@ void Backend::PresentFrame()
 	SDL_RenderPresent(data->renderer);
 }
 
+// bool LoadEmbeddedFont(const std::string& font_family_name,
+//                       const unsigned char* font_data,
+//                       size_t font_size,
+//                       const std::string& tmp_filename = "")
+// {
+//     // Determine temporary file name
+//     std::string tmp_file;
+//     if (!tmp_filename.empty()) {
+//         tmp_file = tmp_filename;
+//     } else {
+//         tmp_file = font_family_name + ".otf"; // default
+//     }
+
+//     // Write embedded font data to temporary file
+//     std::ofstream ofs(tmp_file, std::ios::binary);
+//     if (!ofs) {
+//         std::cerr << "Failed to open temp font file for writing: " << tmp_file << std::endl;
+//         return false;
+//     }
+//     ofs.write(reinterpret_cast<const char*>(font_data), font_size);
+//     ofs.close();
+
+//     // Load the font with RmlUi
+//     if (!Rml::LoadFontFace(tmp_file)) {
+//         std::cerr << "Failed to load font: " << tmp_file << std::endl;
+//         return false;
+//     }
+
+//     return true;
+// }
+
 bool LoadEmbeddedFont(const std::string& font_family_name,
                       const unsigned char* font_data,
                       size_t font_size,
-                      const std::string& tmp_filename = "")
+                      Rml::Style::FontStyle style = Rml::Style::FontStyle::Normal,
+                      Rml::Style::FontWeight weight = Rml::Style::FontWeight::Normal,
+                      bool fallback_face = false,
+                      int face_index = 0)
 {
-    // Determine temporary file name
-    std::string tmp_file;
-    if (!tmp_filename.empty()) {
-        tmp_file = tmp_filename;
-    } else {
-        tmp_file = font_family_name + ".otf"; // default
-    }
+    // Wrap the raw memory in an Rml::Span
+    Rml::Span<const Rml::byte> data_span(
+        reinterpret_cast<const Rml::byte*>(font_data),
+        font_size
+    );
 
-    // Write embedded font data to temporary file
-    std::ofstream ofs(tmp_file, std::ios::binary);
-    if (!ofs) {
-        std::cerr << "Failed to open temp font file for writing: " << tmp_file << std::endl;
-        return false;
-    }
-    ofs.write(reinterpret_cast<const char*>(font_data), font_size);
-    ofs.close();
-
-    // Load the font with RmlUi
-    if (!Rml::LoadFontFace(tmp_file)) {
-        std::cerr << "Failed to load font: " << tmp_file << std::endl;
+    // Load directly from memory
+    if (!Rml::LoadFontFace(data_span,
+                           font_family_name,
+                           style,
+                           weight,
+                           fallback_face,
+                           face_index))
+    {
+        std::cerr << "Failed to load embedded font (memory) for: "
+                  << font_family_name << std::endl;
         return false;
     }
 

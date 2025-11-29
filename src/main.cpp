@@ -4,7 +4,7 @@
 #include <RmlUi/Core.h>
 #include <RmlUi/Core/Context.h>
 
-#include "rmlui_backends/RmlUi_Backend_SDL_SDLrenderer.hpp" // The backend you showed earlier
+#include "rmlui_backends/RmlUi_Backend_SDL_SDLrenderer.hpp"
 
 #include <fstream>
 #include <iostream>
