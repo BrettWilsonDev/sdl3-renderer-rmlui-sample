@@ -135,8 +135,15 @@ if(USE_RmlUi)
     set(FREETYPE_INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}/build/_deps/freetype-src/include")
     include_directories(${FREETYPE_INCLUDE_DIR})
 
-    # Path to your libfreetyped.a
-    set(FREETYPE_LIBRARY "${CMAKE_CURRENT_LIST_DIR}/build/_deps/freetype-build/libfreetyped.a")
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+            set(FREETYPE_LIBRARY "${CMAKE_CURRENT_LIST_DIR}/build/_deps/freetype-build/Debug/freetyped.lib")
+        else()
+            set(FREETYPE_LIBRARY "${CMAKE_CURRENT_LIST_DIR}/build/_deps/freetype-build/Release/freetyped.lib")
+        endif()
+    else()
+        set(FREETYPE_LIBRARY "${CMAKE_CURRENT_LIST_DIR}/build/_deps/freetype-build/libfreetyped.a")
+    endif()
 
 
     # Create an imported target so RmlUi can find it
@@ -251,24 +258,24 @@ endif()
 # Build flags and additional settings
 ##########################################################################################
 
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/assets)
-    message("copying assets in build")
-    set(destination_dir ${CMAKE_CURRENT_BINARY_DIR}/assets)
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-            set(destination_dir ${CMAKE_CURRENT_BINARY_DIR}/debug/assets)
-        else()
-            set(destination_dir ${CMAKE_CURRENT_BINARY_DIR}/release/assets)
-        endif()
-    endif()
-    add_custom_target(copyAssetsOver
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_CURRENT_SOURCE_DIR}/assets
-        ${destination_dir}
-        COMMENT "Copying assets to build directory"
-    )
-    add_dependencies(${PROJECT_NAME} copyAssetsOver)
-endif()
+# if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/assets)
+#     message("copying assets in build")
+#     set(destination_dir ${CMAKE_CURRENT_BINARY_DIR}/assets)
+#     if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+#         if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+#             set(destination_dir ${CMAKE_CURRENT_BINARY_DIR}/debug/assets)
+#         else()
+#             set(destination_dir ${CMAKE_CURRENT_BINARY_DIR}/release/assets)
+#         endif()
+#     endif()
+#     add_custom_target(copyAssetsOver
+#         COMMAND ${CMAKE_COMMAND} -E copy_directory
+#         ${CMAKE_CURRENT_SOURCE_DIR}/assets
+#         ${destination_dir}
+#         COMMENT "Copying assets to build directory"
+#     )
+#     add_dependencies(${PROJECT_NAME} copyAssetsOver)
+# endif()
 
 add_definitions(-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE})
 
@@ -276,10 +283,6 @@ add_definitions(-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE})
 if(ASYNCIFY)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s ASYNCIFY")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
-endif()
-
-if(useReactPhysics3D)
-    set(CMAKE_CXX_FLAGS "-m64")
 endif()
 
 # Setting ASSETS_PATH
@@ -316,16 +319,16 @@ if(${PLATFORM} STREQUAL "Web")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os")
     set(CMAKE_EXECUTABLE_SUFFIX ".html") # This line is used to set your executable to build with the emscripten html template so that you can directly open it.
     set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".html")
-    if(NOT noAssets)
-        if(USE_SDL3)
-            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s ALLOW_MEMORY_GROWTH=1 -s GL_UNSAFE_OPTS=0 --use-preload-plugins --preload-file assets/ --shell-file ../vendor/minshell.html")
-        endif(USE_SDL3)
-        target_compile_definitions(${PROJECT_NAME} PUBLIC ASSETS_PATH="/assets/")
-    else()
+    # if(NOT noAssets)
+        # if(USE_SDL3)
+        #     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s ALLOW_MEMORY_GROWTH=1 -s GL_UNSAFE_OPTS=0 --use-preload-plugins --preload-file assets/ --shell-file ../vendor/minshell.html")
+        # endif(USE_SDL3)
+        # target_compile_definitions(${PROJECT_NAME} PUBLIC ASSETS_PATH="/assets/")
+    # else()
         if(USE_SDL3)
             set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s ALLOW_MEMORY_GROWTH=1 -s GL_UNSAFE_OPTS=0 --use-preload-plugins --shell-file ../vendor/minshell.html")
         endif()
-    endif()
+    # endif()
 endif()
 
 # Ensure that hot-reload is enabled for VS
