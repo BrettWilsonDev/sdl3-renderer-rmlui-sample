@@ -128,33 +128,16 @@ if(USE_RmlUi)
         https://github.com/freetype/freetype.git
         master
     )
-
+    
     FetchContent_GetProperties(${dep})
-
-    # include_directories(RECURSE build/_deps/rmlui-src/include/)
-    set(FREETYPE_INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}/build/_deps/freetype-src/include")
-    include_directories(${FREETYPE_INCLUDE_DIR})
-
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-            set(FREETYPE_LIBRARY "${CMAKE_CURRENT_LIST_DIR}/build/_deps/freetype-build/Debug/freetyped.lib")
-        else()
-            set(FREETYPE_LIBRARY "${CMAKE_CURRENT_LIST_DIR}/build/_deps/freetype-build/Release/freetype.lib")
-        endif()
-    else()
-        set(FREETYPE_LIBRARY "${CMAKE_CURRENT_LIST_DIR}/build/_deps/freetype-build/libfreetyped.a")
+    if(NOT ${dep}_POPULATED)
+        FetchContent_Populate(${dep})
+        add_subdirectory(${${dep}_SOURCE_DIR} ${${dep}_BINARY_DIR})
     endif()
 
+    add_library(Freetype::Freetype ALIAS freetype)
 
-    # Create an imported target so RmlUi can find it
-    add_library(Freetype::Freetype STATIC IMPORTED)
-    set_target_properties(Freetype::Freetype PROPERTIES
-        IMPORTED_LOCATION ${FREETYPE_LIBRARY}
-        INTERFACE_INCLUDE_DIRECTORIES ${FREETYPE_INCLUDE_DIR}
-    )
-
-    # add the dependency here to be linked
-    list(APPEND LIBRARIES ${dep})
+    list(APPEND LIBRARIES Freetype::Freetype)
 endif()
 
 ##########################################################################################
